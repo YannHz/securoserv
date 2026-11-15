@@ -1,0 +1,31 @@
+Project SecuroServ {
+  database_type: 'SQLServer'
+  Note: 'Modelo del esquema Azure SQL. Sin datos ni credenciales.'
+}
+
+Table dbo.usuarios {
+  id int [pk, increment, not null]
+  nombre nvarchar(80) [not null]
+  usuario nvarchar(40) [not null, unique, note: 'Comparación sin distinguir mayúsculas.']
+  pin_hash nvarchar(512) [not null, note: 'Hash scrypt; nunca el PIN original.']
+  rol nvarchar(20) [not null, note: 'Administrador, Secretario, Ejecutivo u Oficinista. Un índice único filtrado permite como máximo un Administrador.']
+  activo bit [not null, default: 1]
+  intentos_fallidos tinyint [not null, default: 0, note: 'De 0 a 3.']
+  bloqueado_hasta datetime2(3) [note: 'NULL cuando no existe bloqueo. UTC.']
+  creado_en datetime2(3) [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table dbo.auditoria {
+  id bigint [pk, increment, not null]
+  usuario_id int [note: 'FK opcional; NULL si el usuario no existe.']
+  usuario nvarchar(40) [not null, note: 'Nombre histórico o desconocido.']
+  fecha datetime2(3) [not null, default: `SYSUTCDATETIME()`]
+  resultado varchar(8) [not null, note: 'CORRECTO o ERROR.']
+  detalle nvarchar(200) [not null]
+  indexes {
+    fecha [name: 'IX_auditoria_fecha']
+    (usuario_id, fecha) [name: 'IX_auditoria_usuario_fecha']
+  }
+}
+
+Ref FK_auditoria_usuario: dbo.auditoria.usuario_id > dbo.usuarios.id
