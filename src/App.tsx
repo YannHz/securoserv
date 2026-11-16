@@ -32,11 +32,7 @@ type Audit = {
   result: "CORRECTO" | "ERROR";
   detail: string;
 };
-const roles: Role[] = [
-  "Secretario",
-  "Ejecutivo",
-  "Oficinista",
-];
+const roles: Role[] = ["Secretario", "Ejecutivo", "Oficinista"];
 
 export default function App() {
   const reduceMotion = useReducedMotion();
@@ -46,7 +42,9 @@ export default function App() {
   const [auditError, setAuditError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [lock, setLock] = useState<{username:string;until:number}|null>(null);
+  const [lock, setLock] = useState<{ username: string; until: number } | null>(
+    null,
+  );
   const [username, setUsername] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -60,31 +58,68 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("TODOS");
   const [notice, setNotice] = useState("");
-  const [noticeKind, setNoticeKind] = useState<"success"|"error">("success");
+  const [noticeKind, setNoticeKind] = useState<"success" | "error">("success");
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const remaining = lock?.username===username.trim().toLowerCase()
-    ? Math.max(0,Math.ceil((lock.until-now)/1000)) : 0;
+  const remaining =
+    lock?.username === username.trim().toLowerCase()
+      ? Math.max(0, Math.ceil((lock.until - now) / 1000))
+      : 0;
   useEffect(() => {
     let active = true;
-    api<{user:User}>("/auth/me").then(data=>{if(active)setSession(data.user)}).catch(e=>{if(active && (!(e instanceof ApiError)||e.status!==401))setError(e.message)}).finally(()=>{if(active)setChecking(false)});
-    return ()=>{active=false};
-  },[]);
+    api<{ user: User }>("/auth/me")
+      .then((data) => {
+        if (active) setSession(data.user);
+      })
+      .catch((e) => {
+        if (active && (!(e instanceof ApiError) || e.status !== 401))
+          setError(e.message);
+      })
+      .finally(() => {
+        if (active) setChecking(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
   useEffect(() => {
-    if(view!=="audit" || session?.role!=="Administrador")return;
-    const controller=new AbortController();
-    setAuditLoading(true);setAuditError("");
-    const timer=setTimeout(()=>{
-      api<{items:Audit[];total:number}>(`/audits?${new URLSearchParams({page:String(page),search:query,result:filter})}`,{signal:controller.signal})
-      .then(data=>{if(!controller.signal.aborted){setAudits(data.items);setTotal(data.total)}})
-      .catch(e=>{if(!controller.signal.aborted){setAuditError(e.message);if(e instanceof ApiError && e.status===401){setSession(null);setView("home");setError("Tu sesión terminó. Vuelve a ingresar.")}}})
-      .finally(()=>{if(!controller.signal.aborted)setAuditLoading(false)});
-    },200);
-    return ()=>{clearTimeout(timer);controller.abort()};
-  },[view,session,query,filter,page]);
+    if (view !== "audit" || session?.role !== "Administrador") return;
+    const controller = new AbortController();
+    setAuditLoading(true);
+    setAuditError("");
+    const timer = setTimeout(() => {
+      api<{ items: Audit[]; total: number }>(
+        `/audits?${new URLSearchParams({ page: String(page), search: query, result: filter })}`,
+        { signal: controller.signal },
+      )
+        .then((data) => {
+          if (!controller.signal.aborted) {
+            setAudits(data.items);
+            setTotal(data.total);
+          }
+        })
+        .catch((e) => {
+          if (!controller.signal.aborted) {
+            setAuditError(e.message);
+            if (e instanceof ApiError && e.status === 401) {
+              setSession(null);
+              setView("home");
+              setError("Tu sesión terminó. Vuelve a ingresar.");
+            }
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setAuditLoading(false);
+        });
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [view, session, query, filter, page]);
   function digit(d: string) {
     if (busy || checking || remaining || pin.length >= 8) return;
     if (!pin.length && d === "0") {
@@ -95,36 +130,93 @@ export default function App() {
     setError("");
   }
   async function login() {
-    if(busy || checking)return;
-    if(!username.trim()){setError("Escribe tu nombre de usuario.");return}
-    if(!remaining && !/^[1-9][0-9]{7}$/.test(pin)){setError("Ingresa un PIN de 8 dígitos sin cero inicial.");return}
-    setBusy(true);setError("");
+    if (busy || checking) return;
+    if (!username.trim()) {
+      setError("Escribe tu nombre de usuario.");
+      return;
+    }
+    if (!remaining && !/^[1-9][0-9]{7}$/.test(pin)) {
+      setError("Ingresa un PIN de 8 dígitos sin cero inicial.");
+      return;
+    }
+    setBusy(true);
+    setError("");
     try {
-      const data=await api<{user:User}>("/auth/login",{method:"POST",body:JSON.stringify({username:username.trim().toLowerCase(),pin})});
-      setSession(data.user);setView("home");setLock(null);setPage(1);setAudits([]);
-    }catch(e){
-      setError(e instanceof Error?e.message:"No se pudo iniciar sesión.");
-      if(e instanceof ApiError && e.lockedUntil)setLock({username:username.trim().toLowerCase(),until:Date.parse(e.lockedUntil)});
-    }finally{setPin("");setBusy(false)}
+      const data = await api<{ user: User }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ username: username.trim().toLowerCase(), pin }),
+      });
+      setSession(data.user);
+      setView("home");
+      setLock(null);
+      setPage(1);
+      setAudits([]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");
+      if (e instanceof ApiError && e.lockedUntil)
+        setLock({
+          username: username.trim().toLowerCase(),
+          until: Date.parse(e.lockedUntil),
+        });
+    } finally {
+      setPin("");
+      setBusy(false);
+    }
   }
   async function logout() {
-    if(busy)return;
+    if (busy) return;
     setBusy(true);
     try {
-      await api("/auth/logout",{method:"POST"});
-      setSession(null);setUsername("");setPin("");setError("");setNotice("");setView("home");setAudits([]);setTotal(0);setQuery("");setFilter("TODOS");setPage(1);
-    }catch(e){setNoticeKind("error");setNotice(e instanceof Error?e.message:"No se pudo cerrar sesión.")}
-    finally{setBusy(false)}
+      await api("/auth/logout", { method: "POST" });
+      setSession(null);
+      setUsername("");
+      setPin("");
+      setError("");
+      setNotice("");
+      setView("home");
+      setAudits([]);
+      setTotal(0);
+      setQuery("");
+      setFilter("TODOS");
+      setPage(1);
+    } catch (e) {
+      setNoticeKind("error");
+      setNotice(e instanceof Error ? e.message : "No se pudo cerrar sesión.");
+    } finally {
+      setBusy(false);
+    }
   }
-  async function register(form:HTMLFormElement) {
-    if(busy)return;
-    const data=new FormData(form);
-    setBusy(true);setNotice("");
+  async function register(form: HTMLFormElement) {
+    if (busy) return;
+    const data = new FormData(form);
+    setBusy(true);
+    setNotice("");
     try {
-      const result=await api<{message:string}>("/users",{method:"POST",body:JSON.stringify({name:String(data.get("name")).trim(),username:String(data.get("username")).trim().toLowerCase(),pin:String(data.get("pin")),role:data.get("role")})});
-      form.reset();setNoticeKind("success");setNotice(result.message);
-    }catch(e){setNoticeKind("error");setNotice(e instanceof Error?e.message:"No se pudo registrar el usuario.");if(e instanceof ApiError && e.status===401){setSession(null);setView("home");setError("Tu sesión terminó. Vuelve a ingresar.")}}
-    finally{setBusy(false)}
+      const result = await api<{ message: string }>("/users", {
+        method: "POST",
+        body: JSON.stringify({
+          name: String(data.get("name")).trim(),
+          username: String(data.get("username")).trim().toLowerCase(),
+          pin: String(data.get("pin")),
+          role: data.get("role"),
+        }),
+      });
+      form.reset();
+      setNoticeKind("success");
+      setNotice(result.message);
+    } catch (e) {
+      setNoticeKind("error");
+      setNotice(
+        e instanceof Error ? e.message : "No se pudo registrar el usuario.",
+      );
+      if (e instanceof ApiError && e.status === 401) {
+        setSession(null);
+        setView("home");
+        setError("Tu sesión terminó. Vuelve a ingresar.");
+      }
+    } finally {
+      setBusy(false);
+    }
   }
   const filtered = audits;
   return (
@@ -273,10 +365,18 @@ export default function App() {
                     type="submit"
                     className="login-button w-full"
                     disabled={
-                      busy || checking || !username.trim() || (!remaining && pin.length !== 8)
+                      busy ||
+                      checking ||
+                      !username.trim() ||
+                      (!remaining && pin.length !== 8)
                     }
                   >
-                    {checking ? "Comprobando sesión…" : busy ? "Validando…" : "Iniciar sesión"} <ArrowRight size={18} />
+                    {checking
+                      ? "Comprobando sesión…"
+                      : busy
+                        ? "Validando…"
+                        : "Iniciar sesión"}{" "}
+                    <ArrowRight size={18} />
                   </Button>
                 </form>
               </div>
@@ -313,7 +413,14 @@ export default function App() {
                 Cerrar sesión
               </Button>
             </div>
-            {notice && view!=="register" && <p className={`form-notice notice-${noticeKind}`} role={noticeKind==="error"?"alert":"status"}>{notice}</p>}
+            {notice && view !== "register" && (
+              <p
+                className={`form-notice notice-${noticeKind}`}
+                role={noticeKind === "error" ? "alert" : "status"}
+              >
+                {notice}
+              </p>
+            )}
             <div className="identity-strip">
               <div className="avatar">
                 {session.name
@@ -404,25 +511,38 @@ export default function App() {
                           aria-label="Buscar auditorías"
                           placeholder="Buscar usuario o detalle…"
                           value={query}
-                          onChange={(e) => {setQuery(e.target.value);setPage(1)}}
+                          onChange={(e) => {
+                            setQuery(e.target.value);
+                            setPage(1);
+                          }}
                         />
                       </div>
                       <select
                         aria-label="Filtrar resultado"
                         value={filter}
-                        onChange={(e) => {setFilter(e.target.value);setPage(1)}}
+                        onChange={(e) => {
+                          setFilter(e.target.value);
+                          setPage(1);
+                        }}
                       >
                         <option value="TODOS">Todos los resultados</option>
                         <option>CORRECTO</option>
                         <option>ERROR</option>
                       </select>
                       <span>
-                        {total}{" "}
-                        {total === 1 ? "registro" : "registros"}
+                        {total} {total === 1 ? "registro" : "registros"}
                       </span>
                     </div>
-                    {auditError && <p className="error-message" role="alert">{auditError}</p>}
-                    {auditLoading && <p className="empty-state" role="status">Consultando auditorías…</p>}
+                    {auditError && (
+                      <p className="error-message" role="alert">
+                        {auditError}
+                      </p>
+                    )}
+                    {auditLoading && (
+                      <p className="empty-state" role="status">
+                        Consultando auditorías…
+                      </p>
+                    )}
                     <div className="table-scroll" aria-busy={auditLoading}>
                       <table>
                         <thead>
@@ -439,7 +559,11 @@ export default function App() {
                               <td data-label="Usuario">
                                 <strong>{a.username}</strong>
                               </td>
-                              <td data-label="Fecha y hora">{new Date(a.at).toLocaleString("es-PE",{timeZone:"America/Lima"})}</td>
+                              <td data-label="Fecha y hora">
+                                {new Date(a.at).toLocaleString("es-PE", {
+                                  timeZone: "America/Lima",
+                                })}
+                              </td>
                               <td data-label="Resultado">
                                 <span
                                   className={`result ${a.result === "ERROR" ? "bad" : ""}`}
@@ -464,9 +588,25 @@ export default function App() {
                       )}
                     </div>
                     <div className="audit-pagination">
-                      <Button variant="outline" size="sm" disabled={page<=1 || auditLoading} onClick={()=>setPage(page-1)}>Anterior</Button>
-                      <span>Página {page} de {Math.max(1,Math.ceil(total/50))}</span>
-                      <Button variant="outline" size="sm" disabled={page*50>=total || auditLoading} onClick={()=>setPage(page+1)}>Siguiente</Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1 || auditLoading}
+                        onClick={() => setPage(page - 1)}
+                      >
+                        Anterior
+                      </Button>
+                      <span>
+                        Página {page} de {Math.max(1, Math.ceil(total / 50))}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page * 50 >= total || auditLoading}
+                        onClick={() => setPage(page + 1)}
+                      >
+                        Siguiente
+                      </Button>
                     </div>
                   </section>
                 ) : (
@@ -480,47 +620,50 @@ export default function App() {
                       }}
                     >
                       <fieldset disabled={busy} className="register-fields">
-                      <label htmlFor="new-name">Nombre completo</label>
-                      <input
-                        id="new-name"
-                        name="name"
-                        required
-                        maxLength={80}
-                        placeholder="Ej. María Torres"
-                      />
-                      <label htmlFor="new-user">Nombre de usuario</label>
-                      <input
-                        id="new-user"
-                        name="username"
-                        required
-                        pattern="[a-zA-Z0-9._-]{3,40}"
-                        placeholder="Ej. mariat"
-                      />
-                      <label htmlFor="new-role">Rol</label>
-                      <select id="new-role" name="role">
-                        {roles.map((r) => (
-                          <option key={r}>{r}</option>
-                        ))}
-                      </select>
-                      <label htmlFor="new-pin">PIN inicial</label>
-                      <input
-                        id="new-pin"
-                        name="pin"
-                        type="password"
-                        inputMode="numeric"
-                        pattern="[1-9][0-9]{7}"
-                        minLength={8}
-                        maxLength={8}
-                        required
-                        placeholder="8 dígitos; no debe empezar con 0"
-                      />
-                      <Button type="submit" disabled={busy}>
-                        <Plus size={17} />
-                        {busy ? "Registrando…" : "Registrar usuario"}
-                      </Button>
+                        <label htmlFor="new-name">Nombre completo</label>
+                        <input
+                          id="new-name"
+                          name="name"
+                          required
+                          maxLength={80}
+                          placeholder="Ej. María Torres"
+                        />
+                        <label htmlFor="new-user">Nombre de usuario</label>
+                        <input
+                          id="new-user"
+                          name="username"
+                          required
+                          pattern="[a-zA-Z0-9._-]{3,40}"
+                          placeholder="Ej. mariat"
+                        />
+                        <label htmlFor="new-role">Rol</label>
+                        <select id="new-role" name="role">
+                          {roles.map((r) => (
+                            <option key={r}>{r}</option>
+                          ))}
+                        </select>
+                        <label htmlFor="new-pin">PIN inicial</label>
+                        <input
+                          id="new-pin"
+                          name="pin"
+                          type="password"
+                          inputMode="numeric"
+                          pattern="[1-9][0-9]{7}"
+                          minLength={8}
+                          maxLength={8}
+                          required
+                          placeholder="8 dígitos; no debe empezar con 0"
+                        />
+                        <Button type="submit" disabled={busy}>
+                          <Plus size={17} />
+                          {busy ? "Registrando…" : "Registrar usuario"}
+                        </Button>
                       </fieldset>
                       {notice && (
-                        <p role={noticeKind==="error"?"alert":"status"} className={`form-notice notice-${noticeKind}`}>
+                        <p
+                          role={noticeKind === "error" ? "alert" : "status"}
+                          className={`form-notice notice-${noticeKind}`}
+                        >
                           {notice}
                         </p>
                       )}

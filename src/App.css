@@ -2474,40 +2474,246 @@ footer {
     .workspace {
         padding-inline: 14px
     }
-}.audit-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 22px;border-top:1px solid #303137}.audit-pagination>span{font-size:11px;color:#a1a2ab}.audit-pagination button{font-size:11px}@media(max-width:400px){.audit-pagination{padding:14px 12px;gap:7px}.audit-pagination button{padding-inline:10px}.audit-pagination>span{font-size:10px}}
+}
+
+.audit-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 17px 22px;
+    border-top: 1px solid #303137
+}
+
+.audit-pagination>span {
+    font-size: 11px;
+    color: #a1a2ab
+}
+
+.audit-pagination button {
+    font-size: 11px
+}
+
+@media(max-width:400px) {
+    .audit-pagination {
+        padding: 14px 12px;
+        gap: 7px
+    }
+
+    .audit-pagination button {
+        padding-inline: 10px
+    }
+
+    .audit-pagination>span {
+        font-size: 10px
+    }
+}
+
 /* Shared contrast and interaction states across the whole application. */
-.admin-actions>button,.login-card,.data-panel,.register-panel,.identity-strip{color:var(--text-primary);background-color:var(--surface)}
-.admin-actions h3,.register-panel h2,.card-heading h2{color:var(--text-primary)}
-.admin-actions p,.register-panel>p,.workspace-top p,.card-heading p,td,.table-toolbar>span,.empty-state{color:var(--text-muted)}
-input,select{border-color:var(--border-control)}
-input::placeholder{color:#a0a1ad;opacity:1}
-input:hover:not(:disabled):not(:focus),select:hover:not(:disabled):not(:focus){border-color:#88818a}
-select,select option{background-color:#17181c;color:var(--text-primary)}
-select:focus{border-color:var(--focus)}
-input:user-invalid{border-color:#ed8981}
-.input-icon>svg{pointer-events:none;color:#a4a5b0}
-.keypad button{border-color:var(--border-control)}
-.keypad button:hover:not(:disabled){background:#36343b;border-color:#aa7678;color:#fff}
-.keypad button:active:not(:disabled){background:#583034;color:#fff}
-.keypad .delete-key{background:transparent;border-color:transparent;color:#c6b9bf}
-.keypad .delete-key:hover:not(:disabled){background:#302529;border-color:#765050}
-.keypad button:disabled{opacity:1;color:#797985;background:#222329;border-color:#383941}
-.pin-display>span{border-color:var(--border-control)}
-.pin-display>span.current{border-color:var(--focus)}
-.pin-display>span.filled{color:#ffdad5;border-color:#a56a70}
-.action-link,.action-icon,.back-link{color:var(--accent)}
-.admin-actions>button:hover,.admin-actions>button:focus-visible{border-color:#a3686e;background:#242126}
-.back-link:hover{color:#ffc0b9}
-.result,.session-active{color:var(--success-text)}
-.result.bad,.error-message{color:var(--error-text);background:var(--error-bg)}
-.form-notice{line-height:1.7;border:1px solid #705559}
-.form-notice.notice-success{background:var(--success-bg);color:var(--success-text);border-color:#476f58}
-.form-notice.notice-error{background:var(--error-bg);color:var(--error-text);border-color:#8d5157}
-.register-fields{border:0;padding:0;margin:0;min-width:0}
-.register-panel button:hover:not(:disabled){background:#cc3b38;color:#fff}
-.login-button:disabled,.register-panel button:disabled{opacity:1!important;background:#3c2a2f!important;color:#b5a2a8!important;cursor:not-allowed}
-.audit-pagination button:disabled{opacity:1;color:#85858f;border-color:#393a42;background:#202125}
-.audit-pagination button:hover:not(:disabled),.workspace-top button:hover:not(:disabled){background:#303037;color:#fff;border-color:#7c727c}
-.table-scroll tbody tr:hover{background:#ffffff04}
-.card-heading p:empty{display:none}
-@media(prefers-contrast:more){input,select,.keypad button,.pin-display>span{border-color:#bfc0cc}.admin-actions p,.register-panel>p,.workspace-top p,td{color:#dedee6}}
+.admin-actions>button,
+.login-card,
+.data-panel,
+.register-panel,
+.identity-strip {
+    color: var(--text-primary);
+    background-color: var(--surface)
+}
+
+.admin-actions h3,
+.register-panel h2,
+.card-heading h2 {
+    color: var(--text-primary)
+}
+
+.admin-actions p,
+.register-panel>p,
+.workspace-top p,
+.card-heading p,
+td,
+.table-toolbar>span,
+.empty-state {
+    color: var(--text-muted)
+}
+
+input,
+select {
+    border-color: var(--border-control)
+}
+
+input::placeholder {
+    color: #a0a1ad;
+    opacity: 1
+}
+
+input:hover:not(:disabled):not(:focus),
+select:hover:not(:disabled):not(:focus) {
+    border-color: #88818a
+}
+
+select,
+select option {
+    background-color: #17181c;
+    color: var(--text-primary)
+}
+
+select:focus {
+    border-color: var(--focus)
+}
+
+input:user-invalid {
+    border-color: #ed8981
+}
+
+.input-icon>svg {
+    pointer-events: none;
+    color: #a4a5b0
+}
+
+.keypad button {
+    border-color: var(--border-control)
+}
+
+.keypad button:hover:not(:disabled) {
+    background: #36343b;
+    border-color: #aa7678;
+    color: #fff
+}
+
+.keypad button:active:not(:disabled) {
+    background: #583034;
+    color: #fff
+}
+
+.keypad .delete-key {
+    background: transparent;
+    border-color: transparent;
+    color: #c6b9bf
+}
+
+.keypad .delete-key:hover:not(:disabled) {
+    background: #302529;
+    border-color: #765050
+}
+
+.keypad button:disabled {
+    opacity: 1;
+    color: #797985;
+    background: #222329;
+    border-color: #383941
+}
+
+.pin-display>span {
+    border-color: var(--border-control)
+}
+
+.pin-display>span.current {
+    border-color: var(--focus)
+}
+
+.pin-display>span.filled {
+    color: #ffdad5;
+    border-color: #a56a70
+}
+
+.action-link,
+.action-icon,
+.back-link {
+    color: var(--accent)
+}
+
+.admin-actions>button:hover,
+.admin-actions>button:focus-visible {
+    border-color: #a3686e;
+    background: #242126
+}
+
+.back-link:hover {
+    color: #ffc0b9
+}
+
+.result,
+.session-active {
+    color: var(--success-text)
+}
+
+.result.bad,
+.error-message {
+    color: var(--error-text);
+    background: var(--error-bg)
+}
+
+.form-notice {
+    line-height: 1.7;
+    border: 1px solid #705559
+}
+
+.form-notice.notice-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border-color: #476f58
+}
+
+.form-notice.notice-error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: #8d5157
+}
+
+.register-fields {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0
+}
+
+.register-panel button:hover:not(:disabled) {
+    background: #cc3b38;
+    color: #fff
+}
+
+.login-button:disabled,
+.register-panel button:disabled {
+    opacity: 1 !important;
+    background: #3c2a2f !important;
+    color: #b5a2a8 !important;
+    cursor: not-allowed
+}
+
+.audit-pagination button:disabled {
+    opacity: 1;
+    color: #85858f;
+    border-color: #393a42;
+    background: #202125
+}
+
+.audit-pagination button:hover:not(:disabled),
+.workspace-top button:hover:not(:disabled) {
+    background: #303037;
+    color: #fff;
+    border-color: #7c727c
+}
+
+.table-scroll tbody tr:hover {
+    background: #ffffff04
+}
+
+.card-heading p:empty {
+    display: none
+}
+
+@media(prefers-contrast:more) {
+
+    input,
+    select,
+    .keypad button,
+    .pin-display>span {
+        border-color: #bfc0cc
+    }
+
+    .admin-actions p,
+    .register-panel>p,
+    .workspace-top p,
+    td {
+        color: #dedee6
+    }
+}
